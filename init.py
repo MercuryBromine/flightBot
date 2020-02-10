@@ -17,7 +17,7 @@ class flightBot:
         self.prices = []
         self.driver.get("https://www.qatarairways.com/en-gb/homepage.html")
 
-        sleep(15)
+        sleep(12)
 
         #Departure Destination#
         #userDeparture = input("Enter the departure airport in the following format 'City' '(Airport Code)'\nFor example: 'Cardiff (CWL)'\nDeparture Airport: ")
@@ -25,7 +25,7 @@ class flightBot:
         departure_field.click()
         departure_field.send_keys('Cardiff (CWL)') #userDeparture
 
-        sleep(2)
+        sleep(1)
 
         #Arrival Destination#
 
@@ -34,7 +34,7 @@ class flightBot:
         arrival_field.click()
         arrival_field.send_keys('Amritsar (ATQ)') #userArrival
 
-        sleep(2)
+        sleep(1)
 
         #Departure Date#
 
@@ -46,7 +46,7 @@ class flightBot:
         self.tempDate = self.date.strftime('%d %b %Y')
         departure_date.send_keys(self.tempDate)
 
-        sleep(2)
+        sleep(1)
 
         #Arrival Date#
 
@@ -56,86 +56,80 @@ class flightBot:
         arrival_date.clear()
         arrival_date.send_keys('06 Jun 2020') #userArrivalDate
 
-        sleep(2)
+        sleep(1)
 
         #Clearing the Date Screen#
         tab_field = self.driver.find_element_by_xpath('//*[@id="tab1"]')
         tab_field.click()
 
-        sleep(2)
+        sleep(1)
 
         #Passengers#
         passenger_field = self.driver.find_element_by_xpath('//*[@id="T7-passengers"]')
         passenger_field.click()
         tab_field.click()
 
-        sleep(2)
+        sleep(1)
 
         #Search Button#
         search_btn = self.driver.find_element_by_xpath('//*[@id="T7-search"]')
         search_btn.click()
         self.findPrices()
-        self.repeatFilling()
 
     def findPrices(self):
-        sleep(20)
-        numberArr = []
-        decimalArr = []
-        content  = self.driver.page_source
+
+        sleep(15)
+
+        more_dates = self.driver.find_element_by_xpath('//*[@id="flightDetailForm_outbound:calendarInitiator_OutBound"]')
+        more_dates.click()
+        sleep(25)
+        content = self.driver.page_source
         soup = BeautifulSoup(content)
-        for i in soup.findAll('span', attrs={'class':'priceDetails'}):
-            number = i.find('span', attrs={'class':'number'})
-            decimal = i.find('sup', attrs={'class':'decimal'})
-            numberArr.append(number.text)
-            decimalArr.append(decimal.text)
+        tempDate = self.date.strftime('%m-%d-%Y')
+        dateArr = tempDate.split('-')
+        dateArr[1] = list(dateArr[1])
+        dateArr[1][0] = int(dateArr[1][0])
+        dateArr[1][1] = int(dateArr[1][1])
+        priceArr = []
+
+        for i in range(1,32):
+            date_id = 'OB1_'+dateArr[0]+str(dateArr[1][0])+str(dateArr[1][1])+dateArr[2]
+            price = soup.find(id=date_id)
+            if price == None:
+                next_page = self.driver.find_element_by_xpath('//*[@id="monthlyCalendarForm:j_id_22f:0:nex"]')
+                next_page.click()
+                sleep(30)
+                content = self.driver.page_source
+                soup = BeautifulSoup(content)
+                price = soup.find(id=date_id)
+                priceArr.append(price.text)
+            else:
+                priceArr.append(price.text)
+            dateArr[1][1] += 1
+            if dateArr[1][1] == 10:
+                dateArr[1][0] += 1
+                dateArr[1][1] = 0
 
         count = 0
-
-        for i in numberArr:
+        for i in priceArr:
             element = i.replace('\n','').replace('\t','')
-            numberArr[count] = element
+            priceArr[count] = element
             count += 1
 
-        count = 0
-        tempPrices = []
-        for i in numberArr:
-            tempPrices.append(float(i + decimalArr[count]))
+        f = open("prices.txt", "w").close()
+        f = open("prices.txt", "a")
+        count = 1
+        monthYearDate = self.date.strftime('%d-%b-%Y')
+        monthYearDateArr = monthYearDate.split('-')
+
+        min_date = priceArr.index(min(priceArr)) + 1
+        min_price = min(priceArr)
+        f.write("The minimum price is on " + str(min_date) + " " + monthYearDateArr[1] + " " +  monthYearDateArr[2] + " " + str(min_price) + "\n")
+
+        for i in priceArr:
+            f.write("The price on " + str(count) + " " + monthYearDateArr[1] + " " + monthYearDateArr[2] + ": " + str(i) + "\n")
             count += 1
-
-        self.prices.append(min(tempPrices))
-
-        print("The lowest price is on " + self.tempDate + " May 2020 is: " + str(min(tempPrices)))
-
-        print(self.prices)
-
-    def repeatFilling(self):
-        for i in range(1,3):
-            self.driver.get("https://www.qatarairways.com/en-gb/homepage.html")
-
-            sleep(5)
-
-            #Departure Date#
-            departure_date = self.driver.find_element_by_xpath('//*[@id="T7-departure_1"]')
-            departure_date.click()
-            departure_date.clear()
-            self.date += datetime.timedelta(days=1)
-            self.tempDate = self.date.strftime('%d %b %Y')
-            departure_date.send_keys(self.tempDate)
-
-            sleep(2)
-
-            #Search Button#
-            search_btn = self.driver.find_element_by_xpath('//*[@id="T7-search"]')
-            search_btn.click()
-            self.findPrices()
-        #self.output()
-
-    '''def output(self):
-        self.outputFile = open("prices.txt", "a")
-        for i in self.prices:
-            self.outputFile.write(self.tempDate + " price: " + str(i) + "\n")'''
+        f.close()
 
 if __name__ == '__main__':
     main()
-
-
