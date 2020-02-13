@@ -112,7 +112,7 @@ class flightBot:
 
                 if price == None:
                     next_page = self.driver.find_element_by_xpath(next_page_xpath)
-                    self.driver.execute_script("arguments[0].click();", next_page)
+                    next_page.click()
                     sleep(35)
                     content = self.driver.page_source
                     soup = BeautifulSoup(content)
@@ -140,7 +140,7 @@ class flightBot:
         delta = self.departure_delta
         outbound_identifier = 'OB1_'
         price_date = self.earliest_departure_date
-        self.next_page_xpath = '//*[@id="monthlyCalendarForm:j_id_22f:0:nex"]'
+        next_page_xpath = '//*[@id="monthlyCalendarForm:j_id_22f:0:nex"]'
         self.findPrices(delta,price_date,outbound_identifier,next_page_xpath)
 
         count = 0
@@ -170,6 +170,9 @@ class flightBot:
             f.write("The price on " + temp_date + " : " + "£" + str(i) + "\n")
             file_date += datetime.timedelta(days=1)
         f.close()
+
+        back = self.driver.find_element_by_xpath('//*[@id="monthlyCalendarForm:calReturnFlow"]/div[1]/button')
+        back.click()
 
     def arrival_prices(self):
         delta = self.arrival_delta
@@ -206,6 +209,9 @@ class flightBot:
             f.write("The price on " + temp_date + " : " + "£" + str(i) + "\n")
             file_date += datetime.timedelta(days=1)
         f.close()
+
+        back = self.driver.find_element_by_xpath('//*[@id="monthlyCalendarForm:calReturnFlow"]/div[1]/button')
+        back.click()
 
 
 
