@@ -1,0 +1,7 @@
+Need to add in the ability to get more than 1 passengers.
+Add validation and verification for GUI.
+
+- List of Airports (search tool.) or dictionary containing all airports qatar flies to
+- Date picker to ensure an invalid date is not picked. or validation to check if the date exits, probably way to do it with datetime
+- Help menu
+- Passengers to be picked as a drop down menu
