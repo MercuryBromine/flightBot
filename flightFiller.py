@@ -108,8 +108,6 @@ class flightFiller:
                     more_dates.click()
                     sleep(35)
                     continue
-
-            print(price_array)
             
             for i in price_array[direction_count]:
                 element = i.replace('\n','').replace('\t','')
@@ -138,10 +136,13 @@ class flightFiller:
                 file_dates[direction_count] += datetime.timedelta(days=1)
             price_files.close()
 
+            back = self.driver.find_element_by_xpath('//*[@id="monthlyCalendarForm:calReturnFlow"]/div[1]/button')
             back.click()
             sleep(2)
             more_dates.click()
             sleep(35)
+            day_count = 0
+            general_count = 0
             direction_count += 1
 
 if __name__ == "__main__":
